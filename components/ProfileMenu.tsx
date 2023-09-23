@@ -19,7 +19,7 @@ const ProfileMenu: FC<ProfileMenuProps> = ({ session }) => {
       <Menu as="div">
         <Menu.Button
           className="flexCenter"
-          onMouseEnter={() => setOpenModal(true)}
+          onClick={() => setOpenModal((prev) => !prev)}
         >
           {session?.user?.image && (
             <Image
