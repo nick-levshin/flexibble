@@ -69,8 +69,8 @@ export const deleteProjectMutation = `#graphql
 `;
 
 export const projectsQuery = `#graphql
-  query getProjects($category: String, $endcursor: String) {
-    projectSearch(first: 8, after: $endcursor, filter: {category: {eq: $category}}) {
+  query getProjects($endcursor: String) {
+    projectSearch(first: 12, after: $endcursor) {
       pageInfo {
         hasNextPage
         hasPreviousPage
