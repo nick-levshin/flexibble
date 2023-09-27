@@ -2,6 +2,15 @@ import { FC } from 'react';
 import { fetchAllProjects } from '@/lib/actions';
 import { ProjectInterface } from '@/common.types';
 import ProjectCard from '@/components/ProjectCard';
+import Categories from '@/components/Categories';
+import LoadMore from '@/components/LoadMore';
+
+interface HomePageProps {
+  searchParams: {
+    category?: string;
+    endcursor?: string;
+  };
+}
 
 type ProjectSearch = {
   projectSearch: {
@@ -15,15 +24,22 @@ type ProjectSearch = {
   };
 };
 
-const HomePage: FC = async () => {
-  const data = (await fetchAllProjects()) as ProjectSearch;
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+export const revalidate = 0;
+
+const HomePage: FC<HomePageProps> = async ({
+  searchParams: { category, endcursor },
+}) => {
+  const data = (await fetchAllProjects(category, endcursor)) as ProjectSearch;
 
   const projectsToDisplay = data?.projectSearch.edges || [];
 
   if (projectsToDisplay.length === 0) {
     return (
       <section className="flexStart flex-col paddings">
-        Categories
+        <Categories />
+
         <p className="no-result-text text-center">
           No projects found, go create some first.
         </p>
@@ -31,9 +47,13 @@ const HomePage: FC = async () => {
     );
   }
 
+  const pagination = data?.projectSearch?.pageInfo;
+  console.log(data);
+
   return (
     <section className="flex-start flex-col paddings mb-16">
-      <h1>Categories</h1>
+      <Categories />
+
       <section className="projects-grid">
         {projectsToDisplay.map(({ node }: { node: ProjectInterface }) => (
           <ProjectCard
@@ -47,7 +67,13 @@ const HomePage: FC = async () => {
           />
         ))}
       </section>
-      <h1>LoadMore</h1>
+
+      <LoadMore
+        startCursor={pagination?.startCursor as string}
+        endCursor={pagination?.endCursor as string}
+        hasPreviousPage={pagination?.hasPreviosPage as boolean}
+        hasNextPage={pagination?.hasNextPage as boolean}
+      />
     </section>
   );
 };

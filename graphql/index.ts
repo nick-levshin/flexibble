@@ -98,6 +98,36 @@ export const projectsQuery = `#graphql
   }
 `;
 
+export const projectsQueryByCategory = `#graphql
+  query getProjects($category: String, $endcursor: String) {
+    projectSearch(first: 12, after: $endcursor, filter: {category: {eq: $category}}) {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      edges {
+        node {
+          title
+          githubUrl
+          description
+          liveSiteUrl
+          id
+          image
+          category
+          createdBy {
+            id
+            email
+            name
+            avatarUrl
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const getProjectByIdQuery = `#graphql
   query GetProjectById($id: ID!) {
     project(by: { id: $id }) {
@@ -127,7 +157,7 @@ export const getProjectsOfUserQuery = `#graphql
       description
       avatarUrl
       githubUrl
-      linkedinUrl
+      linkedInUrl
       projects(last: $last) {
         edges {
           node {

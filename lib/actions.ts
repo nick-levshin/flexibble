@@ -2,9 +2,15 @@ import { ProjectForm } from '@/common.types';
 import {
   createProjectMutation,
   createUserMutation,
+  deleteProjectMutation,
+  getProjectByIdQuery,
+  getProjectsOfUserQuery,
   getUserQuery,
   projectsQuery,
+  projectsQueryByCategory,
+  updateProjectMutation,
 } from '@/graphql';
+import { isBase64Regex } from '@/utils';
 import { GraphQLClient } from 'graphql-request';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -86,10 +92,58 @@ export const createNewProject = async (
   }
 };
 
+export const editProject = async (
+  id: string,
+  form: ProjectForm,
+  token: string
+) => {
+  const isUploadingNewImage = isBase64Regex(form.image);
+
+  let updatedFrom = { ...form };
+
+  if (isUploadingNewImage) {
+    const imageUrl = await uploadImage(form.image);
+
+    if (imageUrl.url) {
+      updatedFrom = {
+        ...form,
+        image: imageUrl.url,
+      };
+    }
+  }
+
+  const variables = {
+    id,
+    input: {
+      ...updatedFrom,
+    },
+  };
+
+  client.setHeader('Authorization', `Bearer ${token}`);
+
+  return makeGraphQLRequest(updateProjectMutation, variables);
+};
+
 export const fetchAllProjects = async (
-  category?: string | null,
+  category?: string,
   endcursor?: string | null
 ) => {
   client.setHeader('x-api-key', apiKey);
-  return makeGraphQLRequest(projectsQuery, { category, endcursor });
+  const request = category ? projectsQueryByCategory : projectsQuery;
+  return makeGraphQLRequest(request, { category, endcursor });
+};
+
+export const getProjectDetails = (id: string) => {
+  client.setHeader('x-api-key', apiKey);
+  return makeGraphQLRequest(getProjectByIdQuery, { id });
+};
+
+export const getUserProjects = (id: string, last?: number) => {
+  client.setHeader('x-api-key', apiKey);
+  return makeGraphQLRequest(getProjectsOfUserQuery, { id, last });
+};
+
+export const deleteProject = (id: string, token: string) => {
+  client.setHeader('Authorization', `Bearer ${token}`);
+  return makeGraphQLRequest(deleteProjectMutation, { id });
 };
