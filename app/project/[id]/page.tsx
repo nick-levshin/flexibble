@@ -6,6 +6,7 @@ import { getProjectDetails } from '@/lib/actions';
 import { getCurrentUser } from '@/lib/session';
 import Image from 'next/image';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { FC } from 'react';
 
 interface ProjectProps {
@@ -19,6 +20,8 @@ const Project: FC<ProjectProps> = async ({ params: { id } }) => {
   const result = (await getProjectDetails(id)) as {
     project?: ProjectInterface;
   };
+
+  if (!session?.user) redirect('/');
 
   if (!result?.project) return <p>Falied to fetch project information</p>;
 
